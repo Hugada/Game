@@ -8,29 +8,100 @@ var keys = [];
 var friction = 0.8;
 //jump
 var gravity = 0.98;
-
+var meteoros = [];
+var positionRandom;
+var frames = 0;
 
 //player
-var player = {
-	x: 5,
-	y: canvas.height - 50,
-	width: 20,
-	height: 20,
-	speed: 5,
-	velX: 0,
-	velY: 0,
-	color: "blue",
+var Player = function() {
+	this.x= 5;
+	this.y= canvas.height - 50;
+	this.width= 20;
+	this.height= 20;
+	this.speed= 5;
+	this.velX= 0;
+	this.velY= 0;
+  this.color= "blue";
+  this.img= new Image();
+  this.img2 = new Image();
+  this.img.src= "assets/ninja.png";
+  this.img2.src = "assets/ninjaReverse.png";
+  this.direction = true;
+  this.chosenImage = this.img;
   //jump
-  jumping:false,
-  jumpStrength:7,
+  this.jumping= false;
+  this.jumpStrength= 7;
   //collition
-  grounded: false,
-	draw: function(){
-		context.fillStyle = this.color;
-		context.fillRect(this.x, this.y, this.width, this.height);
-	}
+  this.grounded=  false;
+	this.draw= function(){
+		// context.fillStyle = this.color;
+    // context.fillRect(this.x, this.y, this.width, this.height);
+    context.drawImage(this.chosenImage, this.x,this.y,30,30); 
+  }
+  this.isTouching = function(meteoro){
+    return (this.x < meteoro.x + meteoro.width)&&
+           (this.x + this.width > meteoro.x)&&
+           (this.y < meteoro.y + meteoro.height)&&
+           (this.y + this.height > meteoro.y);
+  }
 }
 
+var player = new Player();
+player.draw();
+
+var Meteoro = function(x){
+this.x = x;
+this.y = 0;
+this.height = 10;
+this.width = 10;
+this.img = new Image();
+this.img.src = "assets/meteoro.png"
+this.draw = function(){
+  this.y++;
+  context.drawImage(this.img,this.x,this.y,this.width,this.height);
+}
+}
+
+function gameOver(){
+  stop();
+  context.font = "120px courier";
+  context.strokeStyle = "orange";
+  context.lineWidth = 8;
+  context.strokeText("Game Over",600,200);
+  context.font = "50px Avenir";
+  context.fillStyle = "black";
+  context.fillText('press R to start', 600, 300)
+}
+
+function stop(){
+  clearInterval(interval);
+  interval = 0;
+}
+
+function checkCollition(){
+  meteoros.forEach(function(meteoro){
+    if(player.isTouching(meteoro)) gameOver();
+  })
+}
+
+function random (num){
+  return Math.floor((Math.random()*num)+1);
+}
+
+function generateMeteors(){
+  if(!(frames%10)==0) return;
+  positionRandom = random(canvas.width);
+  var meteoro = new Meteoro(positionRandom);
+  var meteoro2 = new Meteoro(positionRandom);
+  meteoros.push(meteoro);
+  meteoros.push(meteoro2);
+}
+
+function drawMeteors(){
+  meteoros.forEach(function(meteoro){
+    meteoro.draw();
+  })
+}
 
 
 //platforms
@@ -41,7 +112,7 @@ var platform_height = 10;
 platforms.push({
   x:0.2,
   y: 0,
-  width: 10,
+  width: 20,
   height: canvas.height
 });
 
@@ -531,7 +602,15 @@ function drawPlatforms(){
 
 function loop(){
   drawPlatforms();
+  if(player.direction){
+    player.chosenImage = player.img
+  }else{
+    player.chosenImage = player.img2
+  }
   player.draw();
+  if(frames%20 === 0) generateMeteors();
+  drawMeteors();
+  checkCollition();
   
   //jump
   if(keys[38] || keys[32]){
@@ -546,11 +625,13 @@ function loop(){
   if(keys[39]){
     if(player.velX < player.speed){
       player.velX++;
+      player.direction = true;
     }
   }
   if(keys[37]){
     if(player.velX > -player.speed){
       player.velX--
+      player.direction = false;
     }
   }
   //jump
@@ -585,7 +666,8 @@ function loop(){
   if(player.grounded){
     player.velY = 0;
   }
-  
+  frames++;
+  console.log(frames);
 } //loop
 
 function collisionCheck(char, plat){
