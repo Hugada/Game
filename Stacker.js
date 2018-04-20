@@ -12,6 +12,37 @@ var meteoros = [];
 var positionRandom;
 var frames = 0;
 
+//background
+function Board(){
+  this.x = 0;
+  this.y = 0;
+  this.width = canvas.width;
+  this.height = canvas.height;
+  this.img = new Image();
+  this.img.src = "assets/forest.png"
+  this.score = 0; 
+  this.music = new Audio();
+  this.music.src = "assets/Anamanaguchi_-_Airbrushed_Summer_2010_Singles_-_Week_1_i0EC4vV7PoE.mp3"
+
+
+  this.img.onload = function(){
+      this.draw();
+  }.bind(this);
+
+  this.draw = function(){
+      context.drawImage(this.img, this.x, this.y, this.width, this.height);
+
+      
+  }
+
+  this.drawScore = function(){
+      this.score = Math.floor(frames/ 60);
+      context.font = "50px Arial Black";
+      context.fillStyle = "darkblue";
+      context.fillText(this.score, this.width/2,this.y+40);
+  }
+}
+
 //player
 var Player = function() {
 	this.x= 5;
@@ -64,13 +95,13 @@ this.draw = function(){
 
 function gameOver(){
   stop();
-  context.font = "120px courier";
-  context.strokeStyle = "orange";
+  context.font = "120px Avenir";
+  context.strokeStyle = "red";
   context.lineWidth = 8;
-  context.strokeText("Game Over",600,200);
+  context.strokeText("Game Over",700,400);
   context.font = "50px Avenir";
-  context.fillStyle = "black";
-  context.fillText('press R to start', 600, 300)
+  context.fillStyle = "red";
+  context.fillText('press R to start', 700, 500)
 }
 
 function stop(){
@@ -103,11 +134,11 @@ function drawMeteors(){
   })
 }
 
-
+var tablero = new Board();
 //platforms
 var platforms = [];
 var platform_width = 120;
-var platform_height = 10;
+var platform_height = 17;
 //primer pared
 platforms.push({
   x:0.2,
@@ -572,11 +603,13 @@ document.body.addEventListener("keyup", function(event){
 
 intro_screen();
 
+
+
 function intro_screen(){
 	context.font = "50px Impact";
 	context.fillStyle = "#000000";
 	context.textAlign = "center";
-	context.fillText("Ninja Gay", canvas.width/2, canvas.height/2);
+	context.fillText("Ninja-pocalypse", canvas.width/2, canvas.height/2);
 
 	context.font = "20px Arial";
 	context.fillText("Press Enter To Start", canvas.width/2, canvas.height/2 + 50);
@@ -601,7 +634,10 @@ function drawPlatforms(){
 }
 
 function loop(){
+  
+  tablero.draw();
   drawPlatforms();
+  
   if(player.direction){
     player.chosenImage = player.img
   }else{
@@ -611,6 +647,8 @@ function loop(){
   if(frames%20 === 0) generateMeteors();
   drawMeteors();
   checkCollition();
+  
+  //tablero.drawScore();
   
   //jump
   if(keys[38] || keys[32]){
